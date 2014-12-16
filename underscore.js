@@ -266,7 +266,7 @@
     var args = slice.call(arguments, 2);
     var isFunc = _.isFunction(method);
     return _.map(obj, function(value) {
-      return (isFunc ? method : value[method]).apply(value, args);
+      return isFunc ? method.apply(value, args) : _.attempt(value, method, args);
     });
   };
 
@@ -1332,6 +1332,16 @@
       value = fallback;
     }
     return _.isFunction(value) ? value.call(object) : value;
+  };
+
+  // Attempts to call the method named `property` on object with
+  // context and arguments.
+  _.attempt = function(object, property, args) {
+    var func = object != null && object[property];
+    if (_.isFunction(func)) {
+        var len = _.isObject(args) && args.length;
+        return len && len === +len ? func.apply(object, args) : object[property]();
+    }
   };
 
   // Generate a unique integer id (unique within the entire client session).

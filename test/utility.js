@@ -323,6 +323,35 @@
     }), obj.a, 'called with context');
   });
 
+  test('attempt', function() {
+    var obj = {x: 'x', y: function(){ return this.x; }, z: function() { return _.toArray(arguments).join(''); }};
+    strictEqual(_.attempt(obj, 'x'), undefined, 'does not return values on object');
+    strictEqual(_.attempt(obj, 'w'), undefined, 'returns undefined for undefined properties');
+
+    strictEqual(_.attempt(obj, 'y'), 'x', 'invokes function with object as context');
+
+    strictEqual(_.attempt(obj, 'z'), '', 'invokes function with arguments');
+    strictEqual(_.attempt(obj, 'z', [1, 2, 3]), '123', 'invokes function with arguments');
+
+
+    var test = function() {};
+    var arraylike = {length: 3, 0: 1, 1: 2, 2: 3};
+    try {
+        // Applying an array-like is supported in ES5, but PhantomJS chokes.
+        test.apply(null, arraylike);
+    } catch (e) {
+        arraylike = {};
+    }
+    strictEqual(_.attempt(obj, 'z', arraylike), _.toArray(arraylike).join(''), 'invokes function with array-like arguments');
+    strictEqual(_.attempt(obj, 'z', {0: 1, 1: 2, 2: 3}), '', 'ignores non-array-like arguments');
+    strictEqual(_.attempt(obj, 'z', '123'), '', 'ignores non-array-like arguments');
+
+    strictEqual(_.attempt(null, 'x'), undefined);
+    strictEqual(_.attempt(undefined, 'x'), undefined);
+    strictEqual(_.attempt(null, undefined), undefined);
+    strictEqual(_.attempt(undefined, undefined), undefined);
+  });
+
   test('_.templateSettings.variable', function() {
     var s = '<%=data.x%>';
     var data = {x: 'x'};
