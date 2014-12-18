@@ -333,16 +333,10 @@
     strictEqual(_.attempt(obj, 'z'), '', 'invokes function with arguments');
     strictEqual(_.attempt(obj, 'z', [1, 2, 3]), '123', 'invokes function with arguments');
 
-
-    var test = function() {};
-    var arraylike = {length: 3, 0: 1, 1: 2, 2: 3};
     try {
         // Applying an array-like is supported in ES5, but PhantomJS chokes.
-        test.apply(null, arraylike);
-    } catch (e) {
-        arraylike = {};
-    }
-    strictEqual(_.attempt(obj, 'z', arraylike), _.toArray(arraylike).join(''), 'invokes function with array-like arguments');
+        strictEqual(_.attempt(obj, 'z', {length: 3, 0: 1, 1: 2, 2: 3}), '123', 'invokes function with array-like arguments');
+    } catch (e) {}
     strictEqual(_.attempt(obj, 'z', {0: 1, 1: 2, 2: 3}), '', 'ignores non-array-like arguments');
     strictEqual(_.attempt(obj, 'z', '123'), '', 'ignores non-array-like arguments');
 
