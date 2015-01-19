@@ -162,28 +162,23 @@
 
   // Create a reducing function iterating left or right.
   function createReduce(dir) {
-    // Optimized iterator function as using arguments.length
-    // in the main function will deoptimize the, see #1991.
-    function iterator(obj, iteratee, memo, keys, index, length) {
-      for (; index >= 0 && index < length; index += dir) {
-        var currentKey = keys ? keys[index] : index;
-        memo = iteratee(memo, obj[currentKey], currentKey, obj);
-      }
-      return memo;
-    }
-
-    return function(obj, iteratee, memo, context) {
-      if (obj == null) return memo;
-      iteratee = optimizeCb(iteratee, context, 4);
+    return function(obj, iteratee, initial, context) {
+      if (obj == null) return initial;
+      var optIteratee = optimizeCb(iteratee, context, 4);
       var keys = obj.length !== +obj.length && _.keys(obj),
           length = (keys || obj).length,
           index = dir > 0 ? 0 : length - 1;
       // Determine the initial value if none is provided.
+      var memo = initial;
       if (arguments.length < 3) {
         memo = obj[keys ? keys[index] : index];
         index += dir;
       }
-      return iterator(obj, iteratee, memo, keys, index, length);
+      for (; index >= 0 && index < length; index += dir) {
+        var currentKey = keys ? keys[index] : index;
+        memo = optIteratee(memo, obj[currentKey], currentKey, obj);
+      }
+      return memo;
     };
   }
 
