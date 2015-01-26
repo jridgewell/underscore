@@ -1339,8 +1339,7 @@
   _.attempt = function(object, property, args) {
     var func = object != null && object[property];
     if (_.isFunction(func)) {
-        var len = _.isObject(args) && args.length;
-        return len && len === +len ? func.apply(object, args) : object[property]();
+        return args ? func.apply(object, args) : object[property]();
     }
   };
 
