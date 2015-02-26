@@ -98,6 +98,7 @@
   // This accumulates the arguments passed into an array, after a given index.
   _.restParams = function(func, startIndex) {
     startIndex = startIndex == null ? func.length - 1 : +startIndex;
+    if (startIndex < 0) throw new TypeError("can't do it");
     return function() {
       var length = arguments.length;
       var args = Array(startIndex + 1);
