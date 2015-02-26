@@ -99,13 +99,14 @@
   _.restParams = function(func, startIndex) {
     startIndex = startIndex == null ? func.length - 1 : +startIndex;
     return function() {
+      var length = arguments.length;
       var args = Array(startIndex + 1);
-      var rest = Array(arguments.length > startIndex ? arguments.length - startIndex : 0);
+      var rest = Array(length > startIndex ? length - startIndex : 0);
       for (var index = 0; index < startIndex; index++) {
         args[index] = arguments[index];
       }
       args[index] = rest;
-      while (index < arguments.length) {
+      while (index < length) {
         rest[index - startIndex] = arguments[index++];
       }
       return func.apply(this, args);
