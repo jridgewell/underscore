@@ -128,7 +128,12 @@
   var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
   var isArrayLike = function(collection) {
     var length = collection != null && collection.length;
-    return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
+    return _.isArray(collection) || (
+        typeof length == 'number' &&
+        length >= 0 &&
+        length <= MAX_ARRAY_INDEX &&
+        (typeof collection != 'object' || 'length' in collection)
+    );
   };
 
   // Collection Functions
