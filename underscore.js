@@ -131,6 +131,45 @@
     return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
   };
 
+  // A small Map shim, to support the most basic use cases.
+  var Map = (function() {
+    var keyer = function(value) {
+      return typeof value === 'string' ? 's' + value : value;
+    };
+    var Map = function() {
+      this._values = [];
+      this._keys = [];
+      this._primitives = nativeCreate && nativeCreate(null);
+    };
+    Map.prototype.get = function(key) {
+      var index = this._indexOf(key);
+      return index >= 0 ? this._values[index] : void 0;
+    };
+    Map.prototype.has = function(key) {
+      return this._indexOf(key) >= 0;
+    };
+    Map.prototype.set = function(key, value) {
+      var index = this._indexOf(key);
+      if (index >= 0) {
+        this._values[index] = value;
+      } else {
+        var i = this._values.push(value) - 1;
+        this._keys.push(key);
+        if (this._primitives && !_.isObject(key)) this._primitives[keyer(key)] = i;
+      }
+    };
+    Map.prototype._indexOf = function(key) {
+      if (this._primitives && !_.isObject(key)) {
+        var index = this._primitives[keyer(key)];
+        return index === void 0 ? -1 : index;
+      } else {
+        return _.indexOf(this._keys, key);
+      }
+    };
+    return Map;
+  })();
+
+
   // Collection Functions
   // --------------------
 
@@ -518,21 +557,16 @@
       isSorted = false;
     }
     if (iteratee != null) iteratee = cb(iteratee, context);
-    var result = [];
-    var seen = [];
+    var seen = new Map();
+    var result = seen._values;
     for (var i = 0, length = array.length; i < length; i++) {
       var value = array[i],
           computed = iteratee ? iteratee(value, i, array) : value;
       if (isSorted) {
-        if (!i || seen !== computed) result.push(value);
+        if (seen !== computed) result.push(value);
         seen = computed;
-      } else if (iteratee) {
-        if (!_.contains(seen, computed)) {
-          seen.push(computed);
-          result.push(value);
-        }
-      } else if (!_.contains(result, value)) {
-        result.push(value);
+      } else if (!seen.has(computed)) {
+        seen.set(computed, value);
       }
     }
     return result;
