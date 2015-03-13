@@ -789,11 +789,11 @@
   _.memoize = function(func, hasher) {
     var memoize = function(key) {
       var cache = memoize.cache;
-      var address = '' + (hasher ? hasher.apply(this, arguments) : key);
-      if (!_.has(cache, address)) cache[address] = func.apply(this, arguments);
-      return cache[address];
+      var address = hasher ? hasher.apply(this, arguments) : key;
+      if (!cache.has(address)) cache.set(address, func.apply(this, arguments));
+      return cache.get(address);
     };
-    memoize.cache = {};
+    memoize.cache = new Map();
     return memoize;
   };
 

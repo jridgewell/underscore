@@ -132,10 +132,10 @@
     });
     equal(upper('foo'), 'FOO');
     equal(upper('bar'), 'BAR');
-    deepEqual(upper.cache, {foo: 'FOO', bar: 'BAR'});
-    upper.cache = {foo: 'BAR', bar: 'FOO'};
+    equal(upper.cache.get('foo'), 'FOO');
+    equal(upper.cache.get('bar'), 'BAR');
+    upper.cache.set('foo', 'BAR');
     equal(upper('foo'), 'BAR');
-    equal(upper('bar'), 'FOO');
 
     var hashed = _.memoize(function(key) {
       //https://github.com/jashkenas/underscore/pull/1679#discussion_r13736209
@@ -145,7 +145,7 @@
       return key.toUpperCase();
     });
     hashed('yep');
-    deepEqual(hashed.cache, {'YEP': 'yep'}, 'takes a hasher');
+    equal(hashed.cache.get('YEP'), 'yep', 'takes a hasher');
 
     // Test that the hash function can be used to swizzle the key.
     var objCacher = _.memoize(function(value, key) {
