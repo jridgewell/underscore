@@ -140,31 +140,41 @@
       this._values = [];
       this._keys = [];
       this._primitives = nativeCreate && nativeCreate(null);
+      this.size = 0;
+
+      this._lastKey = void 0;
+      this._lastIndex = -1;
     };
     Map.prototype.get = function(key) {
-      var index = this._indexOf(key);
-      return index >= 0 ? this._values[index] : void 0;
+      if (this.has(key)) return this._values[this._lastIndex];
     };
     Map.prototype.has = function(key) {
-      return this._indexOf(key) >= 0;
+      var index = this._indexOf(key);
+      return index >= 0 && index < this.size;
     };
     Map.prototype.set = function(key, value) {
       var index = this._indexOf(key);
-      if (index >= 0) {
-        this._values[index] = value;
-      } else {
-        var i = this._values.push(value) - 1;
-        this._keys.push(key);
-        if (this._primitives && !_.isObject(key)) this._primitives[keyer(key)] = i;
+
+      this._values[index] = value;
+      if (index >= this.size) {
+        this.size = index + 1;
+        this._keys[index] = key;
+        if (this._primitives && !_.isObject(key)) this._primitives[keyer(key)] = index;
       }
     };
     Map.prototype._indexOf = function(key) {
+      var index = this._lastIndex;
+      if (this._lastKey === key && index >= 0) return index;
       if (this._primitives && !_.isObject(key)) {
-        var index = this._primitives[keyer(key)];
-        return index === void 0 ? -1 : index;
+        index = this._primitives[keyer(key)];
       } else {
-        return _.indexOf(this._keys, key);
+        index = _.indexOf(this._keys, key);
       }
+      if (index === -1 || index === void 0) index = this.size;
+
+      this._lastKey = key;
+      this._lastIndex = index;
+      return index;
     };
     return Map;
   })();
