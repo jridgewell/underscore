@@ -106,7 +106,7 @@
       for (var index = 0; index < startIndex; index++) {
         args[index] = arguments[index];
       }
-      args[index] = rest;
+      args[startIndex] = rest;
       while (index < length) {
         rest[index - startIndex] = arguments[index++];
       }
