@@ -1508,10 +1508,11 @@
   _.mixin = function(obj) {
     _.each(_.functions(obj), function(name) {
       var func = _[name] = obj[name];
-      _.prototype[name] = restArgs(function(args) {
-        args.unshift(this._wrapped);
+      _.prototype[name] = function() {
+        var args = [this._wrapped];
+        for (var i = 0; i < arguments.length; i++) args.push(arguments[i]);
         return result(this, func.apply(_, args));
-      });
+      };
     });
   };
 
