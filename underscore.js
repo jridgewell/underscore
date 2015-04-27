@@ -199,29 +199,6 @@
   // The right-associative version of reduce, also known as `foldr`.
   _.reduceRight = _.foldr = createReduce(-1);
 
-  // **Transform** is an alternative to reduce that transforms `obj` to a new
-  // `accumulator` object.
-  _.transform = function(obj, iteratee, accumulator, context) {
-    if (accumulator == null) {
-      if (_.isArray(obj)) {
-        accumulator = [];
-      } else if (_.isObject(obj)) {
-        var Ctor = obj.constructor;
-        accumulator = baseCreate(typeof Ctor == 'function' && Ctor.prototype);
-      } else {
-        accumulator = {};
-      }
-    }
-    iteratee = optimizeCb(iteratee, context, 4);
-    var keys = !isArrayLike(obj) && _.keys(obj),
-      length = (keys || obj).length;
-    for (var index = 0; index < length; index++) {
-      var currentKey = keys ? keys[index] : index;
-      if (iteratee(accumulator, obj[currentKey], currentKey, obj) === false) break;
-    }
-    return accumulator;
-  };
-
   // Return the first value which passes a truth test. Aliased as `detect`.
   _.find = _.detect = function(obj, predicate, context) {
     var key;
@@ -985,6 +962,20 @@
         results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
       }
       return results;
+  };
+
+  // **Transform** is an alternative to reduce that transforms `obj` to a new
+  // `accumulator` object. Unlike reduce, will only treat real arrays as an array.
+  _.transform = function(obj, iteratee, accumulator, context) {
+    iteratee = optimizeCb(iteratee, context, 4);
+    if (accumulator == null) accumulator = _.isArray(obj) ? [] : {};
+    var keys = !_.isArray(obj) && _.keys(obj),
+      length = (keys || obj).length;
+    for (var index = 0; index < length; index++) {
+      var currentKey = keys ? keys[index] : index;
+      iteratee(accumulator, obj[currentKey], currentKey, obj);
+    }
+    return accumulator;
   };
 
   // Convert an object into a list of `[key, value]` pairs.
