@@ -98,6 +98,10 @@
     equal(_.flatten([_.range(10), _.range(10), 5, 1, 3]).length, 23);
     equal(_.flatten([new Array(1000000), _.range(56000), 5, 1, 3]).length, 1056003, 'Flatten can handle massive collections');
     equal(_.flatten([new Array(1000000), _.range(56000), 5, 1, 3], true).length, 1056003, 'Flatten can handle massive collections');
+
+    var arrayLike = {0: 1, 1: 2, length: 2};
+    equal(_.flatten([[arrayLike]]).length, 1, 'does not flatten array-likes');
+    equal(_.flatten([arrayLike], false).length, 1, 'does not flatten array-likes');
   });
 
   test('without', function() {
@@ -209,6 +213,13 @@
     result = _.intersection([1, 2, 3], null);
     equal(Object.prototype.toString.call(result), '[object Array]', 'returns an empty array when passed null as argument beyond the first');
     equal(result.length, 0, 'returns an empty array when passed null as argument beyond the first');
+
+    result = _.intersection([1, 1, 2]);
+    equal(result.length, 2, 'returns uniq values of a single array');
+
+    var arrayLike = {0: 1, 1: 2, length: 2};
+    result = _.intersection(arrayLike, [1]);
+    equal(result.length, 1, 'takes the intersection of array-likes');
   });
 
   test('union', function() {
@@ -225,6 +236,10 @@
 
     result = _.union([1, 2, 3], 4);
     deepEqual(result, [1, 2, 3], 'restrict the union to arrays only');
+
+    var arrayLike = {0: 1, 1: 2, length: 2};
+    result = _.union(arrayLike, [3]);
+    deepEqual(result, [1, 2, 3], 'takes the union of array-likes');
   });
 
   test('difference', function() {
@@ -236,6 +251,10 @@
 
     result = _.difference([1, 2, 3], 1);
     deepEqual(result, [1, 2, 3], 'restrict the difference to arrays only');
+
+    var arrayLike = {0: 1, 1: 2, length: 2};
+    result = _.difference([1, 2, 3], arrayLike);
+    deepEqual(result, [3], 'takes the difference of array-likes');
   });
 
   test('zip', function() {

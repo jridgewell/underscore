@@ -488,19 +488,19 @@
   };
 
   // Internal implementation of a recursive `flatten` function.
-  var flatten = function(input, shallow, strict, startIndex) {
+  var flatten = function(input, shallow, arrayLikes, startIndex) {
     var output = [], idx = 0;
     for (var i = startIndex || 0, length = getLength(input); i < length; i++) {
       var value = input[i];
-      if (isArrayLike(value) && (_.isArray(value) || _.isArguments(value))) {
+      if (isArrayLike(value) && (arrayLikes || _.isArray(value) || _.isArguments(value))) {
         //flatten current level of array or arguments object
-        if (!shallow) value = flatten(value, shallow, strict);
+        if (!shallow) value = flatten(value, shallow, arrayLikes);
         var j = 0, len = value.length;
         output.length += len;
         while (j < len) {
           output[idx++] = value[j++];
         }
-      } else if (!strict) {
+      } else if (!arrayLikes) {
         output[idx++] = value;
       }
     }
