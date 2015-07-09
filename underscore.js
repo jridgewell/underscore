@@ -147,6 +147,22 @@
     return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
   };
 
+  var isIndex = function(collection, index) {
+    if (!_.isObject(collection)) return false;
+    return typeof index === 'number' ?
+      isArrayLike(collection) && index >= 0 && index < collection.length :
+      index in collection;
+  };
+
+  var isIterateeCall = function(value, index, collection) {
+    if (isIndex(collection, index)) {
+      var other = collection[index];
+      return value === value ? value === other : other !== other;
+    }
+
+    return false;
+  };
+
   // Collection Functions
   // --------------------
 
@@ -305,7 +321,8 @@
   _.max = function(obj, iteratee, context) {
     var result = -Infinity, lastComputed = -Infinity,
         value, computed;
-    if (iteratee == null || (typeof iteratee == 'number' && typeof obj[0] != 'object') && obj != null) {
+    if (context && isIterateeCall(obj, iteratee, context)) iteratee = null;
+    if (iteratee == null) {
       obj = isArrayLike(obj) ? obj : _.values(obj);
       for (var i = 0, length = obj.length; i < length; i++) {
         value = obj[i];
@@ -330,7 +347,8 @@
   _.min = function(obj, iteratee, context) {
     var result = Infinity, lastComputed = Infinity,
         value, computed;
-    if (iteratee == null || (typeof iteratee == 'number' && typeof obj[0] != 'object') && obj != null) {
+    if (context && isIterateeCall(obj, iteratee, context)) iteratee = null;
+    if (iteratee == null) {
       obj = isArrayLike(obj) ? obj : _.values(obj);
       for (var i = 0, length = obj.length; i < length; i++) {
         value = obj[i];
