@@ -799,15 +799,9 @@
   // cleared.
   _.defer = _.partial(_.delay, _, 1);
 
-  // Returns a function, that, when invoked, will only be triggered at most once
-  // during a given window of time. Normally, the throttled function will run
-  // as much as it can, without ever going more than once per `wait` duration;
-  // but if you'd like to disable the execution on the leading edge, pass
-  // `{leading: false}`. To disable execution on the trailing edge, ditto.
-  _.throttle = function(func, wait, options) {
+  var createThrottler = function(func, wait, options, isDebounce) {
     var timeout, result;
     var previous = 0;
-    if (!options) options = {};
     var leading = options.leading !== false;
     var trailing = options.trailing !== false;
 
@@ -819,7 +813,7 @@
 
     var throttled = restArgs(function(args) {
       var now = _.now();
-      if (!leading && !previous) previous = now;
+      if (!leading && (isDebounce || !previous)) previous = now;
       var elapsed = now - previous;
 
       if (timeout) clearTimeout(timeout);
@@ -827,6 +821,7 @@
         previous = now;
         result = func.apply(this, args);
       } else if (trailing) {
+        if (isDebounce) elapsed = 0;
         timeout = _.delay(later, wait - elapsed, this, args);
       }
 
@@ -835,11 +830,20 @@
 
     throttled.clear = function() {
       clearTimeout(timeout);
-      previous = 0;
       timeout = null;
+      previous = 0;
     };
 
     return throttled;
+  };
+
+  // Returns a function, that, when invoked, will only be triggered at most once
+  // during a given window of time. Normally, the throttled function will run
+  // as much as it can, without ever going more than once per `wait` duration;
+  // but if you'd like to disable the execution on the leading edge, pass
+  // `{leading: false}`. To disable execution on the trailing edge, ditto.
+  _.throttle = function(func, wait, options) {
+    return createThrottler(func, wait, options || {}, false);
   };
 
   // Returns a function, that, as long as it continues to be invoked, will not
@@ -847,32 +851,11 @@
   // N milliseconds. If `immediate` is passed, trigger the function on the
   // leading edge, instead of the trailing.
   _.debounce = function(func, wait, immediate) {
-    var timeout, result;
-
-    var later = function(context, args) {
-      timeout = null;
-      if (args) result = func.apply(context, args);
+    var options = {
+      leading: !!immediate,
+      trailing: !immediate
     };
-
-    var debounced = restArgs(function(args) {
-      var callNow = immediate && !timeout;
-      if (timeout) clearTimeout(timeout);
-      if (callNow) {
-        timeout = setTimeout(later, wait);
-        result = func.apply(this, args);
-      } else if (!immediate) {
-        timeout = _.delay(later, wait, this, args);
-      }
-
-      return result;
-    });
-
-    debounced.clear = function() {
-      clearTimeout(timeout);
-      timeout = null;
-    };
-
-    return debounced;
+    return createThrottler(func, wait, options, true);
   };
 
   // Returns the first function passed as an argument to the second,
