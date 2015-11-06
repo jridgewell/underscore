@@ -281,6 +281,25 @@
     }, 96);
   });
 
+  asyncTest('throttle triggers immediate call when invoked repeatedly', 2, function(assert) {
+    var counter = 0;
+    var limit = 48;
+    var incr = function(){ counter++; };
+    var throttledIncr = _.throttle(incr, 32, {leading: false});
+
+    var stamp = new Date;
+    while (new Date - stamp < limit) {
+      throttledIncr();
+    }
+    var lastCount = counter;
+    assert.ok(counter == 1);
+
+    _.delay(function() {
+      assert.ok(counter > lastCount);
+      start();
+    }, 96);
+  });
+
   asyncTest('throttle does not trigger leading call when leading is set to false', 2, function(assert) {
     var counter = 0;
     var incr = function(){ counter++; };

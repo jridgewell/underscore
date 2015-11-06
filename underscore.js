@@ -805,41 +805,38 @@
   // but if you'd like to disable the execution on the leading edge, pass
   // `{leading: false}`. To disable execution on the trailing edge, ditto.
   _.throttle = function(func, wait, options) {
-    var timeout, context, args, result;
+    var timeout, result;
     var previous = 0;
     if (!options) options = {};
+    var leading = options.leading !== false;
+    var trailing = options.trailing !== false;
 
-    var later = function() {
-      previous = options.leading === false ? 0 : _.now();
+    var later = function(context, args) {
       timeout = null;
-      result = func.apply(context, args);
-      if (!timeout) context = args = null;
+      previous = leading ? _.now() : 0;
+      if (args) result = func.apply(context, args);
     };
 
-    var throttled = function() {
+    var throttled = restArgs(function(args) {
       var now = _.now();
-      if (!previous && options.leading === false) previous = now;
-      var remaining = wait - (now - previous);
-      context = this;
-      args = arguments;
-      if (remaining <= 0 || remaining > wait) {
-        if (timeout) {
-          clearTimeout(timeout);
-          timeout = null;
-        }
+      if (!leading && !previous) previous = now;
+      var elapsed = now - previous;
+
+      if (timeout) clearTimeout(timeout);
+      if (elapsed > wait || elapsed < 0) {
         previous = now;
-        result = func.apply(context, args);
-        if (!timeout) context = args = null;
-      } else if (!timeout && options.trailing !== false) {
-        timeout = setTimeout(later, remaining);
+        result = func.apply(this, args);
+      } else if (trailing) {
+        timeout = _.delay(later, wait - elapsed, this, args);
       }
+
       return result;
-    };
+    });
 
     throttled.clear = function() {
       clearTimeout(timeout);
       previous = 0;
-      timeout = context = args = null;
+      timeout = null;
     };
 
     return throttled;
